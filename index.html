@@ -4,6 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Form</title>
+    <style>
+        body {
+            font-size: 18px; /* ফন্ট সাইজ বড় করা হলো */
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            font-size: 24px;
+        }
+        label, input, select, button {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <h2>Payment Form</h2>
@@ -25,7 +66,7 @@
         <input type="number" id="amount" name="amount" required><br><br>
 
         <button type="button" onclick="submitForm()">Submit</button>
-        <button type="button" onclick="cancelForm()">Cancel</button>
+        <button type="button" onclick="goBack()">Back</button>
     </form>
 
     <script>
@@ -46,17 +87,11 @@ Amount: ${amount} USD
                 alert("Submission Successful!");
             } else {
                 alert("Amount must be 5 USD or more.");
-                const backButton = document.createElement("button");
-                backButton.innerText = "Back";
-                backButton.onclick = function () {
-                    window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
-                };
-                document.body.appendChild(backButton);
             }
         }
 
-        function cancelForm() {
-            document.getElementById("paymentForm").reset();
+        function goBack() {
+            window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
         }
 
         function sendToTelegram(message) {
