@@ -85,6 +85,11 @@ Amount: ${amount} USD
                 `;
                 sendToTelegram(message);
                 alert("Submission Successful!");
+
+                // Auto redirect back after successful submission
+                setTimeout(function() {
+                    window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
+                }, 2000); // 2 সেকেন্ড পর পেজটি ফিরে যাবে
             } else {
                 alert("Amount must be 5 USD or more.");
             }
