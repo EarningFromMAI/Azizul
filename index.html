@@ -76,23 +76,30 @@
             const walletNumber = document.getElementById("walletNumber").value;
             const amount = parseFloat(document.getElementById("amount").value);
 
-            if (amount >= 5) {
-                const message = `
+            // চেক করা হচ্ছে যদি ফর্ম পূর্ণ না হয় বা Amount 5 USD এর কম হয়
+            if (!fullName || !paymentMethod || !walletNumber || !amount) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            if (amount < 5) {
+                alert("Amount must be 5 USD or more.");
+                return;
+            }
+
+            const message = `
 Full Name: ${fullName}
 Payment Method: ${paymentMethod}
 Wallet Number: ${walletNumber}
 Amount: ${amount} USD
-                `;
-                sendToTelegram(message);
-                alert("Submission Successful!");
+            `;
+            sendToTelegram(message);
+            alert("Submission Successful!");
 
-                // Auto redirect back after 1 second
-                setTimeout(function() {
-                    window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
-                }, 1000); // 1 সেকেন্ড পর পেজটি ফিরে যাবে
-            } else {
-                alert("Amount must be 5 USD or more.");
-            }
+            // Auto redirect back after 0 seconds
+            setTimeout(function() {
+                window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
+            }, 0); // 0 সেকেন্ড পর পেজটি ফিরে যাবে
         }
 
         function goBack() {
