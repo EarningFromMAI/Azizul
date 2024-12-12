@@ -59,8 +59,8 @@
             <option value="USDT">USDT TRC 20</option>
         </select><br><br>
 
-        <label for="number">Number:</label><br>
-        <input type="text" id="number" name="number" required><br><br>
+        <label for="walletNumber">Wallet Number:</label><br>
+        <input type="text" id="walletNumber" name="walletNumber" required><br><br>
 
         <label for="amount">Amount (USD):</label><br>
         <input type="number" id="amount" name="amount" required><br><br>
@@ -73,23 +73,23 @@
         function submitForm() {
             const fullName = document.getElementById("fullName").value;
             const paymentMethod = document.getElementById("paymentMethod").value;
-            const number = document.getElementById("number").value;
+            const walletNumber = document.getElementById("walletNumber").value;
             const amount = parseFloat(document.getElementById("amount").value);
 
             if (amount >= 5) {
                 const message = `
 Full Name: ${fullName}
 Payment Method: ${paymentMethod}
-Number: ${number}
+Wallet Number: ${walletNumber}
 Amount: ${amount} USD
                 `;
                 sendToTelegram(message);
                 alert("Submission Successful!");
 
-                // Auto redirect back after successful submission
+                // Auto redirect back after 1 second
                 setTimeout(function() {
                     window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
-                }, 2000); // 2 সেকেন্ড পর পেজটি ফিরে যাবে
+                }, 1000); // 1 সেকেন্ড পর পেজটি ফিরে যাবে
             } else {
                 alert("Amount must be 5 USD or more.");
             }
