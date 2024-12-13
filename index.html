@@ -44,6 +44,18 @@
             max-width: 600px;
             margin: 0 auto;
         }
+        #paymentHistory {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        .paymentItem {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -69,14 +81,20 @@
         <button type="button" onclick="goBack()">Back</button>
     </form>
 
+    <div id="paymentHistory">
+        <h3>Payment History</h3>
+        <div id="historyList"></div>
+    </div>
+
     <script>
+        // Function to submit the form
         function submitForm() {
             const fullName = document.getElementById("fullName").value;
             const paymentMethod = document.getElementById("paymentMethod").value;
             const walletNumber = document.getElementById("walletNumber").value;
             const amount = parseFloat(document.getElementById("amount").value);
 
-            // চেক করা হচ্ছে যদি ফর্ম পূর্ণ না হয় বা Amount 5 USD এর কম হয়
+            // Check if all fields are filled out and the amount is 5 USD or more
             if (!fullName || !paymentMethod || !walletNumber || !amount) {
                 alert("Please fill out all fields.");
                 return;
@@ -87,6 +105,7 @@
                 return;
             }
 
+            // Prepare the message to send to Telegram
             const message = `
 Full Name: ${fullName}
 Payment Method: ${paymentMethod}
@@ -96,16 +115,33 @@ Amount: ${amount} USD
             sendToTelegram(message);
             alert("Submission Successful!");
 
+            // Add the payment details to the history list
+            const historyList = document.getElementById("historyList");
+            const paymentItem = document.createElement("div");
+            paymentItem.classList.add("paymentItem");
+            paymentItem.innerHTML = `
+                <strong>Full Name:</strong> ${fullName} <br>
+                <strong>Payment Method:</strong> ${paymentMethod} <br>
+                <strong>Wallet Number:</strong> ${walletNumber} <br>
+                <strong>Amount:</strong> ${amount} USD
+            `;
+            historyList.prepend(paymentItem); // Add new payment on top
+
+            // Clear the form fields after submission
+            document.getElementById("paymentForm").reset();
+
             // Auto redirect back after 0 seconds
             setTimeout(function() {
-                window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
-            }, 0); // 0 সেকেন্ড পর পেজটি ফিরে যাবে
+                window.history.back(); // Go back to the previous page
+            }, 0); // 0 seconds after submission
         }
 
+        // Function to go back to the previous page
         function goBack() {
-            window.history.back(); // পূর্বের পেজে ফিরে যাওয়ার জন্য
+            window.history.back(); // Go back to the previous page
         }
 
+        // Function to send payment details to Telegram
         function sendToTelegram(message) {
             const botToken = "7618245891:AAFh8nnfrKjGgiOWL5qijC_jPFDd3KjdejY";
             const chatId = "6633541228";
