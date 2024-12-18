@@ -6,7 +6,7 @@
     <title>Payment Form</title>
     <style>
         body {
-            font-size: 18px; /* ফন্ট সাইজ বড় করা হলো */
+            font-size: 18px;
             line-height: 1.6;
             margin: 0;
             padding: 20px;
@@ -87,20 +87,15 @@
     </div>
 
     <script>
-        // Load payment history from localStorage when the page loads
         window.onload = function() {
             loadPaymentHistory();
         };
 
-        // Function to load payment history from localStorage
         function loadPaymentHistory() {
             const historyList = document.getElementById("historyList");
             const payments = JSON.parse(localStorage.getItem("paymentHistory")) || [];
-            
-            // Clear the existing history list
             historyList.innerHTML = '';
 
-            // Add each saved payment item to the history list
             payments.forEach(function(payment) {
                 const paymentItem = document.createElement("div");
                 paymentItem.classList.add("paymentItem");
@@ -108,20 +103,19 @@
                     <strong>Full Name:</strong> ${payment.fullName} <br>
                     <strong>Payment Method:</strong> ${payment.paymentMethod} <br>
                     <strong>Wallet Number:</strong> ${payment.walletNumber} <br>
-                    <strong>Amount:</strong> ${payment.amount} USD
+                    <strong>Amount:</strong> ${payment.amount} USD <br>
+                    <strong>Status:</strong> ${payment.status || "Pending"}
                 `;
                 historyList.appendChild(paymentItem);
             });
         }
 
-        // Function to submit the form
         function submitForm() {
             const fullName = document.getElementById("fullName").value;
             const paymentMethod = document.getElementById("paymentMethod").value;
             const walletNumber = document.getElementById("walletNumber").value;
             const amount = parseFloat(document.getElementById("amount").value);
 
-            // Check if all fields are filled out and the amount is 5 USD or more
             if (!fullName || !paymentMethod || !walletNumber || !amount) {
                 alert("Please fill out all fields.");
                 return;
@@ -132,69 +126,105 @@
                 return;
             }
 
-            // Prepare the payment object
             const payment = {
+                id: Date.now(),
                 fullName: fullName,
                 paymentMethod: paymentMethod,
                 walletNumber: walletNumber,
-                amount: amount
+                amount: amount,
+                status: "Pending"
             };
 
-            // Get the existing payment history from localStorage
             const payments = JSON.parse(localStorage.getItem("paymentHistory")) || [];
-
-            // Add the new payment to the beginning of the list
             payments.unshift(payment);
-
-            // Save the updated payment history back to localStorage
             localStorage.setItem("paymentHistory", JSON.stringify(payments));
 
-            // Send the payment details to Telegram
             const message = `
 Full Name: ${fullName}
 Payment Method: ${paymentMethod}
 Wallet Number: ${walletNumber}
 Amount: ${amount} USD
             `;
-            sendToTelegram(message);
+            sendToTelegram(payment.id, message);
+
             alert("Submission Successful!");
-
-            // Reload payment history to display the new entry
             loadPaymentHistory();
-
-            // Clear the form fields after submission
             document.getElementById("paymentForm").reset();
         }
 
-        // Function to go back to the previous page
         function goBack() {
-            window.history.back(); // Go back to the previous page
+            window.history.back();
         }
 
-        // Function to send payment details to Telegram
-        function sendToTelegram(message) {
+        function sendToTelegram(paymentId, message) {
             const botToken = "7618245891:AAFh8nnfrKjGgiOWL5qijC_jPFDd3KjdejY";
             const chatId = "6633541228";
             const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
+            const buttons = {
+                inline_keyboard: [
+                    [
+                        { text: "Confirm", callback_data: `confirm_${paymentId}` },
+                        { text: "Reject", callback_data: `reject_${paymentId}` }
+                    ]
+                ]
+            };
+
             fetch(url, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     chat_id: chatId,
                     text: message,
+                    reply_markup: buttons
                 }),
             })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Telegram API request failed");
-                    }
-                    return response.json();
-                })
-                .then((data) => console.log("Message sent to Telegram:", data))
-                .catch((error) => console.error("Error:", error));
+            .then(response => response.json())
+            .then(data => console.log("Message sent to Telegram:", data))
+            .catch(error => console.error("Error:", error));
+        }
+
+        function updatePaymentStatus(paymentId, status) {
+            const payments = JSON.parse(localStorage.getItem("paymentHistory")) || [];
+            const payment = payments.find(p => p.id === paymentId);
+            if (payment) {
+                payment.status = status;
+                localStorage.setItem("paymentHistory", JSON.stringify(payments));
+                loadPaymentHistory();
+            }
+        }
+
+        // Handle Telegram webhook (to be set up on your server)
+        async function handleTelegramWebhook(update) {
+            const callbackQuery = update.callback_query;
+            if (callbackQuery) {
+                const data = callbackQuery.data;
+                const chatId = callbackQuery.message.chat.id;
+
+                if (data.startsWith("confirm_")) {
+                    const paymentId = parseInt(data.split("_")[1]);
+                    updatePaymentStatus(paymentId, "Successful");
+                    await sendTelegramResponse(chatId, "Payment confirmed.");
+                } else if (data.startsWith("reject_")) {
+                    const paymentId = parseInt(data.split("_")[1]);
+                    updatePaymentStatus(paymentId, "Rejected");
+                    await sendTelegramResponse(chatId, "Payment rejected.");
+                }
+            }
+        }
+
+        async function sendTelegramResponse(chatId, message) {
+            const botToken = "7618245891:AAFh8nnfrKjGgiOWL5qijC_jPFDd3KjdejY";
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                }),
+            });
         }
     </script>
 </body>
